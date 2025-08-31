@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টেলিগ্রাম মিনি অ্যাপ - স্বয়ংক্রিয় এডমিন প্যানেল</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'AdorshoLipi', 'Kalpurush', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0e3eda 0%, #2b95ff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        header h1 {
+            color: #0e3eda;
+            margin-bottom: 10px;
+        }
+        
+        .login-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            margin: 50px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid #0e3eda;
+        }
+        
+        .stat-box h3 {
+            color: #0e3eda;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .requests-table th, .requests-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .requests-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .requests-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-pending {
+            color: #ff9800;
+            font-weight: 600;
+        }
+        
+        .status-approved {
+            color: #4caf50;
+            font-weight: 600;
+        }
+        
+        .status-rejected {
+            color: #f44336;
+            font-weight: 600;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        
+        .btn-approve {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-reject {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: #0e3eda;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #0a2fb6;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .filter-btn.active {
+            background: #0e3eda;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- লগইন সেকশন -->
+        <div id="loginSection" class="login-section">
+            <h2 style="text-align: center; color: #0e3eda; margin-bottom: 20px;">এডমিন লগইন</h2>
+            <div class="form-group">
+                <label for="username">ইউজারনেম</label>
+                <input type="text" id="username" placeholder="ইউজারনেম লিখুন">
+            </div>
+            <div class="form-group">
+                <label for="password">পাসওয়ার্ড</label>
+                <input type="password" id="password" placeholder="পাসওয়ার্ড লিখুন">
+            </div>
+            <button class="btn" onclick="login()">লগইন করুন</button>
+            <p id="loginError" style="color: red; text-align: center; margin-top: 15px; display: none;">ভুল ইউজারনেম বা পাসওয়ার্ড!</p>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <h3 style="color: #0e3eda; margin-bottom: 10px;">ডিফল্ট লগইন তথ্য:</h3>
+                <p><strong>ইউজারনেম:</strong> admin</p>
+                <p><strong>পাসওয়ার্ড:</strong> admin123</p>
+            </div>
+        </div>
+
+        <!-- ড্যাশবোর্ড সেকশন -->
+        <div id="dashboardSection" class="hidden">
+            <header>
+                <h1>টেলিগ্রাম মিনি অ্যাপ - এডমিন প্যানেল</h1>
+                <p>সকল উত্তোলন অনুরোধ দেখুন এবং পরিচালনা করুন</p>
+                <button class="btn" onclick="logout()" style="max-width: 200px; margin-top: 15px;">লগআউট</button>
+            </header>
+
+            <div class="dashboard">
+                <div class="stats">
+                    <div class="stat-box">
+                        <h3>মোট উত্তোলন অনুরোধ</h3>
+                        <p id="totalRequests">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>বিবেচনাধীন অনুরোধ</h3>
+                        <p id="pendingRequests">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>অনুমোদিত অনুরোধ</h3>
+                        <p id="approvedRequests">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>প্রত্যাখ্যাত অনুরোধ</h3>
+                        <p id="rejectedRequests">0</p>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterRequests('all')">সব</button>
+                    <button class="filter-btn" onclick="filterRequests('pending')">বিবেচনাধীন</button>
+                    <button class="filter-btn" onclick="filterRequests('approved')">অনুমোদিত</button>
+                    <button class="filter-btn" onclick="filterRequests('rejected')">প্রত্যাখ্যাত</button>
+                </div>
+
+                <table class="requests-table">
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th>ব্যবহারকারী</th>
+                            <th>পরিমাণ</th>
+                            <th>পদ্ধতি</th>
+                            <th>বিবরণ</th>
+                            <th>স্ট্যাটাস</th>
+                            <th>কার্যক্রম</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsList">
+                        <!-- এখানে অনুরোধগুলি লোড হবে -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ডিফল্ট এডমিন লগইন তথ্য
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "admin123";
+        
+        // উত্তোলন অনুরোধ ডেটা (আপনার অ্যাপ থেকে স্বয়ংক্রিয়ভাবে লোড হবে)
+        let withdrawalRequests = [];
+        
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loginError = document.getElementById('loginError');
+        const totalRequestsEl = document.getElementById('totalRequests');
+        const pendingRequestsEl = document.getElementById('pendingRequests');
+        const approvedRequestsEl = document.getElementById('approvedRequests');
+        const rejectedRequestsEl = document.getElementById('rejectedRequests');
+        const requestsList = document.getElementById('requestsList');
+        
+        // লগইন ফাংশন
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                // লগইন সফল
+                loginSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                loginError.style.display = 'none';
+                
+                // ডেটা লোড করুন
+                loadWithdrawalData();
+            } else {
+                // লগইন ব্যর্থ
+                loginError.style.display = 'block';
+            }
+        }
+        
+        // লগআউট ফাংশন
+        function logout() {
+            loginSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            loginError.style.display = 'none';
+        }
+        
+        // আপনার টেলিগ্রাম মিনি অ্যাপ থেকে ডেটা লোড করার ফাংশন
+        function loadWithdrawalData() {
+            // এখানে আপনার অ্যাপের localStorage থেকে ডেটা লোড করুন
+            try {
+                // উদাহরণ ডেটা - আপনার অ্যাপের ডেটা দিয়ে প্রতিস্থাপন করুন
+                const exampleData = [
+                    { id: 1, date: '৩১/০৮/২০২৪', user: 'রহিম (ID: 12345)', amount: '৳ ১,৫০০', method: 'bKash', details: '০১৭১২XXXXX', status: 'pending' },
+                    { id: 2, date: '৩০/০৮/২০২৪', user: 'করিম (ID: 23456)', amount: '৳ ২,০০০', method: 'Nagad', details: '০১৮১৭XXXXX', status: 'approved' },
+                    { id: 3, date: '২৯/০৮/২০২৪', user: 'সালমা (ID: 34567)', amount: '৳ ১,২০০', method: 'Rocket', details: '০১৯১৯XXXXX', status: 'rejected' },
+                    { id: 4, date: '২৮/০৮/২০২৪', user: 'জাহিদ (ID: 45678)', amount: '৳ ৩,০০০', method: 'USDT', details: 'TJXo4...Wr35', status: 'pending' }
+                ];
+                
+                // আপনার অ্যাপের আসল ডেটা লোড করার চেষ্টা করুন
+                const appData = localStorage.getItem('galaxyEarnAllUsers');
+                if (appData) {
+                    const users = JSON.parse(appData);
+                    withdrawalRequests = [];
+                    
+                    // প্রতিটি ব্যবহারকারীর উত্তোলন অনুরোধ প্রসেস করুন
+                    Object.keys(users).forEach(userId => {
+                        const user = users[userId];
+                        if (user.withdrawalRequests) {
+                            user.withdrawalRequests.forEach(request => {
+                                withdrawalRequests.push({
+                                    id: request.id || Date.now(),
+                                    date: new Date(request.date || Date.now()).toLocaleDateString('bn-BD'),
+                                    user: `${user.name} (ID: ${user.telegramId || userId})`,
+                                    amount: `৳ ${request.amount}`,
+                                    method: request.method,
+                                    details: request.details,
+                                    status: request.status || 'pending',
+                                    userId: userId
+                                });
+                            });
+                        }
+                    });
+                } else {
+                    // যদি ডেটা না পাওয়া যায়, উদাহরণ ডেটা ব্যবহার করুন
+                    withdrawalRequests = exampleData;
+                }
+                
+                // ড্যাশবোর্ড আপডেট করুন
+                updateDashboard();
+            } catch (error) {
+                console.error('ডেটা লোড করতে সমস্যা:', error);
+                alert('আপনার অ্যাপের ডেটা লোড করতে সমস্যা হচ্ছে। আপনার অ্যাপটি প্রথমে চালু হয়েছে কিনা তা নিশ্চিত করুন।');
+            }
+        }
+        
+        // ড্যাশবোর্ড আপডেট ফাংশন
+        function updateDashboard() {
+            // পরিসংখ্যান আপডেট করুন
+            totalRequestsEl.textContent = withdrawalRequests.length;
+            pendingRequestsEl.textContent = withdrawalRequests.filter(req => req.status === 'pending').length;
+            approvedRequestsEl.textContent = withdrawalRequests.filter(req => req.status === 'approved').length;
+            rejectedRequestsEl.textContent = withdrawalRequests.filter(req => req.status === 'rejected').length;
+            
+            // অনুরোধ তালিকা আপডেট করুন
+            displayRequests(withdrawalRequests);
+        }
+        
+        // অনুরোধ প্রদর্শন ফাংশন
+        function displayRequests(requests) {
+            requestsList.innerHTML = '';
+            
+            if (requests.length === 0) {
+                requestsList.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">কোনো অনুরোধ পাওয়া যায়নি</td></tr>';
+                return;
+            }
+            
+            requests.forEach(request => {
+                const row = document.createElement('tr');
+                
+                // স্ট্যাটাস ক্লাস নির্ধারণ
+                let statusClass = '';
+                if (request.status === 'pending') statusClass = 'status-pending';
+                if (request.status === 'approved') statusClass = 'status-approved';
+                if (request.status === 'rejected') statusClass = 'status-rejected';
+                
+                // স্ট্যাটাস টেক্সট
+                let statusText = '';
+                if (request.status === 'pending') statusText = 'বিবেচনাধীন';
+                if (request.status === 'approved') statusText = 'অনুমোদিত';
+                if (request.status === 'rejected') statusText = 'প্রত্যাখ্যাত';
+                
+                row.innerHTML = `
+                    <td>${request.date}</td>
+                    <td>${request.user}</td>
+                    <td>${request.amount}</td>
+                    <td>${request.method}</td>
+                    <td>${request.details}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                    <td>
+                        ${request.status === 'pending' ? `
+                            <button class="action-btn btn-approve" onclick="approveRequest(${request.id})">অনুমোদন</button>
+                            <button class="action-btn btn-reject" onclick="rejectRequest(${request.id})">প্রত্যাখ্যান</button>
+                        ` : `
+                            <button class="action-btn" onclick="viewDetails(${request.id})">বিস্তারিত</button>
+                        `}
+                    </td>
+                `;
+                
+                requestsList.appendChild(row);
+            });
+        }
+        
+        // অনুরোধ ফিল্টার ফাংশন
+        function filterRequests(status) {
+            // ফিল্টার বাটন আপডেট
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filteredRequests = [];
+            
+            if (status === 'all') {
+                filteredRequests = withdrawalRequests;
+            } else {
+                filteredRequests = withdrawalRequests.filter(req => req.status === status);
+            }
+            
+            displayRequests(filteredRequests);
+        }
+        
+        // অনুরোধ অনুমোদন ফাংশন
+        function approveRequest(requestId) {
+            if (confirm('আপনি কি এই অনুরোধটি অনুমোদন করতে চান?')) {
+                // আপনার অ্যাপের ডেটা আপডেট করুন
+                updateRequestStatus(requestId, 'approved');
+                
+                // ড্যাশবোর্ড রিফ্রেশ করুন
+                loadWithdrawalData();
+                
+                alert('অনুরোধটি অনুমোদন করা হয়েছে!');
+            }
+        }
+        
+        // অনুরোধ প্রত্যাখ্যান ফাংশন
+        function rejectRequest(requestId) {
+            if (confirm('আপনি কি এই অনুরোধটি প্রত্যাখ্যান করতে চান?')) {
+                // আপনার অ্যাপের ডেটা আপডেট করুন
+                updateRequestStatus(requestId, 'rejected');
+                
+                // ড্যাশবোর্ড রিফ্রেশ করুন
+                loadWithdrawalData();
+                
+                alert('অনুরোধটি প্রত্যাখ্যান করা হয়েছে!');
+            }
+        }
+        
+        // অনুরোধ স্ট্যাটাস আপডেট ফাংশন
+        function updateRequestStatus(requestId, status) {
+            try {
+                // আপনার অ্যাপের localStorage থেকে ডেটা লোড করুন
+                const appData = localStorage.getItem('galaxyEarnAllUsers');
+                if (appData) {
+                    const users = JSON.parse(appData);
+                    let updated = false;
+                    
+                    // প্রতিটি ব্যবহারকারীর উত্তোলন অনুরোধ খুঁজুন
+                    Object.keys(users).forEach(userId => {
+                        const user = users[userId];
+                        if (user.withdrawalRequests) {
+                            user.withdrawalRequests.forEach(request => {
+                                if (request.id === requestId) {
+                                    request.status = status;
+                                    updated = true;
+                                }
+                            });
+                        }
+                    });
+                    
+                    if (updated) {
+                        // আপডেট করা ডেটা সেভ করুন
+                        localStorage.setItem('galaxyEarnAllUsers', JSON.stringify(users));
+                    }
+                }
+            } catch (error) {
+                console.error('ডেটা আপডেট করতে সমস্যা:', error);
+            }
+        }
+        
+        // বিস্তারিত দেখুন ফাংশন
+        function viewDetails(requestId) {
+            const request = withdrawalRequests.find(req => req.id === requestId);
+            if (request) {
+                alert(`অনুরোধ বিস্তারিত:\n
+তারিখ: ${request.date}
+ব্যবহারকারী: ${request.user}
+পরিমাণ: ${request.amount}
+পদ্ধতি: ${request.method}
+বিবরণ: ${request.details}
+স্ট্যাটাস: ${request.status}`);
+            }
+        }
+        
+        // Enter কী চাপলে লগইন করার জন্য
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+        
+        // পেজ লোড হলে স্বয়ংক্রিয়ভাবে ডেটা লোড করার চেষ্টা করুন
+        window.addEventListener('load', function() {
+            // যদি ব্যবহারকারী ইতিমধ্যে লগইন করা থাকে
+            const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            if (isLoggedIn) {
+                loginSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                loadWithdrawalData();
+            }
+            
+            // লগইন অবস্থা সেভ করুন
+            const loginBtn = document.querySelector('.btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function() {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
